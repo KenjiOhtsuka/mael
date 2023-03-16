@@ -1,0 +1,7 @@
+# for Intellij IDEA
+.idea
+mael.iml
+
+# for editable package
+mael.egg-info
+__pycache__
