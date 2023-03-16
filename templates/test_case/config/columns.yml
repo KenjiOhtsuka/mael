@@ -1,0 +1,31 @@
+# This is a sample file for column conditions.
+
+# These columns are prepended to the table.
+prepend:
+  No.:
+    # increment column is aligned to the right.
+    value: increment
+    width: 5
+
+# Here is the column conditions, which are not in prepended or appended columns .
+# Columns in the table is read from the markdown files.
+# So you have to specify only the columns you want to configure.
+column_conditions:
+  Categories:
+    type: list
+  Description:
+    width: 50
+  Expected:
+    width: 50
+
+# These columns are appended to the table.
+append:
+  Result: null
+  Timestamp: null
+  Comment:
+    width: 50
+
+# For column configuration, these attributes are available
+#     width: number
+#     type:  list or string
+#     value: increment
