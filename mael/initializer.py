@@ -40,4 +40,3 @@ class Initializer:
         if not os.path.exists(dir_path):
             os.mkdir(dir_path)
         shutil.copytree(template_path, dir_path, dirs_exist_ok=True)
-

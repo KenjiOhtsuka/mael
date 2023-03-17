@@ -1,9 +1,8 @@
 import functools
 import glob
-import openpyxl as px
-import openpyxl.styles.alignment
 import os
 import re
+import openpyxl as px
 from openpyxl.utils.cell import get_column_letter
 from .column_config import ColumnConfig, ValueType, Alignment
 
@@ -100,7 +99,8 @@ def build_excel(directory_path):
     ignore_file_names = []
     if os.path.exists(ignore_file_path):
         with open(ignore_file_path, 'r') as f:
-            ignore_file_names = list(filter(lambda x: x != '', map(lambda x: x.strip(), f.readlines())))
+            ignore_file_names =\
+                list(filter(lambda x: x != '', map(lambda x: x.strip(), f.readlines())))
 
     # create new excel book
     wb = px.Workbook()
