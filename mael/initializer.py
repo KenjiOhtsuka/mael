@@ -9,31 +9,26 @@ class Initializer:
 
     def initialize(self):
         dir_path = self.dir_path
-        print(f'initialize {dir_path}')
+        print(f'Initialize {dir_path}.')
         while True:
-            answer = input('Do you use template? [y/n]: ')
-            answer = answer.lower()
-            if answer == 'y':
-                templates = {
-                    0: 'None',
-                    1: 'Test case'
-                }
-                while True:
-                    template_answer = input(
-                        "\n".join([
-                            "Which template do you use?\n",
-                            *[f'{k}: {v}' for k, v in templates.items()],
-                            '\nType number: '
-                        ])
-                    )
-                    if not re.match(r'\d', template_answer):
-                        continue
-                    template_answer = int(template_answer)
-                    if template_answer in templates:
-                        break
-                break
-            elif answer == 'n':
-                break
+            templates = {
+                0: 'Normal',
+                1: 'Test case'
+            }
+            while True:
+                template_answer = input(
+                    "\n".join([
+                        "Which template do you use?\n",
+                        *[f'{k}: {v}' for k, v in templates.items()],
+                        '\nType number: '
+                    ])
+                )
+                if not re.match(r'\d', template_answer):
+                    continue
+                template_answer = int(template_answer)
+                if template_answer in templates:
+                    break
+            break
 
         file_path = os.path.abspath(__file__)
         template_path = os.path.join(
