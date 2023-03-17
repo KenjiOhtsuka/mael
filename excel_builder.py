@@ -261,6 +261,8 @@ def build_excel(directory_path):
 
             row_index += 1
 
+    wb.remove(wb.worksheets[0])
+
     # save Excel file
     basename = os.path.basename(os.path.abspath(directory_path))
     filename = f'{basename}.xlsx'
