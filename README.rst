@@ -90,3 +90,9 @@ Usage
      +-----------+-----------+-----------+
 
    If you put multiple markdown files, the Excel file contains multiple sheets.
+
+************
+PyPI package
+************
+
+https://pypi.org/project/mael/
