@@ -21,7 +21,9 @@ This tool can convert markdown files to tables in an Excel file.
 Installation
 ************
 
-This tool is installed with pip::
+This tool is installed with pip:
+
+.. code-block:: bash
 
     $ pip install mael
     
@@ -29,56 +31,62 @@ This tool is installed with pip::
 Usage
 *****
 
-1. Initialize the directory, then initial files are created based on the templates.::
+#. Initialize the directory, then initial files are created based on the templates.
 
-        $ mael init some_dir
-        
-2. Write your data in markdown. You can put multiple markdown files in the directory.::
+   .. code-block:: bash
 
-        # List title
+     $ mael init some_dir
         
-        ## Summary
+#. Write your data in markdown. You can put multiple markdown files in the directory.
+
+   .. code-block:: markdown
+   
+     # List title
         
-        Please write summary of the table data.
+     ## Summary
         
-        ## List
+     Please write summary of the table data.
         
-        ### Column 1
+     ## List
         
-        Value 1-1
+     ### Column 1
         
-        ### Column 2
+     Value 1-1
         
-        Value 1-2
+     ### Column 2
         
-        ---
+     Value 1-2
         
-        ### Column 1
+     ---
         
-        Value 2-1
+     ### Column 1
         
-        ---
+     Value 2-1
         
-        ### Column 2
+     ---
         
-        Value 3-2
+     ### Column 2
+        
+     Value 3-2
+     
+   Separate each item with :code:`---`.
         
 3. Build Excel, then you can get an Excel file in the directory.::
 
         $ mael build some_dir
         
-There, the Excel file is as:
+   There, the Excel file contains the sheet as:
 
-    Summary
+     Summary
     
-    Please write summary of the table data.
+     Please write summary of the table data.
 
-    +-----------+-----------+-----------+
-    | Column 1  | Column 2  | Column 3  |
-    +-----------+-----------+-----------+
-    | Value 1-1 | Value 2-1 |           |
-    +-----------+-----------+-----------+
-    | Value 2-1 |           | Value 3-2 |
-    +-----------+-----------+-----------+
+     +-----------+-----------+-----------+
+     | Column 1  | Column 2  | Column 3  |
+     +-----------+-----------+-----------+
+     | Value 1-1 | Value 2-1 |           |
+     +-----------+-----------+-----------+
+     | Value 2-1 |           | Value 3-2 |
+     +-----------+-----------+-----------+
     
-If you put multiple markdown files, the Excel file contains multiple sheets.
+   If you put multiple markdown files, the Excel file contains multiple sheets.
