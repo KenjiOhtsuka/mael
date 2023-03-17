@@ -1,3 +1,4 @@
+from .column_config import ColumnConfig, ValueType, Alignment
 from openpyxl.utils.cell import get_column_letter
 import functools
 import glob
@@ -5,8 +6,6 @@ import openpyxl as px
 import openpyxl.styles.alignment
 import os
 import re
-
-from column_config import ColumnConfig, ValueType, Alignment
 
 VARIABLE_CONFIG_PATH = 'variables.ini'
 COLUMN_CONFIG_PATHS = [

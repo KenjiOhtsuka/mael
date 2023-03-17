@@ -1,6 +1,6 @@
+from enum import Enum
 import openpyxl
 import yaml
-from enum import Enum
 
 class ValueType(Enum):
     INCREMENT = 1
