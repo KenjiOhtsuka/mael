@@ -1,2 +1,2 @@
-include templates/**/*
-include templates/**/**/*
+include mael/templates/**/*
+include mael/templates/**/**/*
