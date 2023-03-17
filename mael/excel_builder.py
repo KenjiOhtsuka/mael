@@ -197,9 +197,11 @@ def build_excel(directory_path):
 
                 if item:
                     item.add_content_line(line.rstrip())
-
+        import pprint
+        pprint.pprint(steps)
         # write steps
         columns = functools.reduce(lambda x, y: x + [z for z in y if z not in x], map(lambda x: x.keys(), steps), [])
+        pprint.pprint(columns)
         for column in list_columns:
             if column in columns:
                 index = columns.index(column)
@@ -218,9 +220,10 @@ def build_excel(directory_path):
 
         for column_index, column in enumerate(column_config.prepend_columns.items()):
             columns.insert(column_index, column[0])
+
         for column in column_config.append_columns:
             columns.append(column)
-
+        pprint.pprint(columns)
         # write header
         for column_index, column in enumerate(columns):
             cell = ws.cell(row=row_index, column=column_index + 1)
@@ -240,9 +243,11 @@ def build_excel(directory_path):
             else:
                 cell.alignment = Alignment.LEFT.excel_alignment()
         row_index += 1
-
+        pprint.pprint(steps)
         # write steps
         increment_columns = column_config.increment_columns()
+        pprint.pprint(increment_columns)
+
         for index, step in enumerate(steps):
             increment_value = index + 1
             for column in increment_columns:
@@ -252,11 +257,11 @@ def build_excel(directory_path):
                 cell = ws.cell(row=row_index, column=column_index + 1)
                 if column in step:
                     value = step[column]
-                    for k, v in variables:
-                      value = re.sub(r'{{\s*' + k + r'\s*}}', value)
+                    if isinstance(value, str):
+                        for k, v in variables.items():
+                            value = re.sub(r'{{\s*' + k + r'\s*}}', v, value)
                     cell.value = value
                 cell.border = THIN_BORDER
-                cell.alignment = Alignment.LEFT.excel_alignment()
 
             row_index += 1
 
