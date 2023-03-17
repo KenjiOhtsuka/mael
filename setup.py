@@ -16,8 +16,9 @@ with open(readme_file_path, encoding='utf-8') as f:
 
 setup(
     name='mael',
-    version='0.0.1',
-    py_modules=['main', 'initializer', 'excel_builder', 'config_reader'],
+    packages=['mael'],
+    version='0.0.3',
+    py_modules=['main', 'initializer', 'excel_builder', 'column_config'],
     install_requires=[
         'pyyaml',
         'openpyxl'
@@ -30,7 +31,7 @@ setup(
     author_email='kok.fdcm@gmail.com',
     description='A tool to convert markdown file to excel.',
     long_description=long_description,
-
+    url='https://github.com/KenjiOhtsuka/mael'
     # entry_points='''
     #     [console_scripts]
     #     myproject=myproject:cli
