@@ -5,3 +5,6 @@ mael.iml
 # for editable package
 mael.egg-info
 __pycache__
+
+# compiled packages
+dist

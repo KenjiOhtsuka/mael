@@ -17,7 +17,7 @@ with open(readme_file_path, encoding='utf-8') as f:
 setup(
     name='mael',
     version='0.0.1',
-    py_modules=['main', 'initializer', 'excel_builder', 'config_reader', 'markdown_reader', 'markdown_parser'],
+    py_modules=['main', 'initializer', 'excel_builder', 'config_reader'],
     install_requires=[
         'pyyaml',
         'openpyxl'
