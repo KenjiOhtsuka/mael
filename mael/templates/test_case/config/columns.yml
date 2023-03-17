@@ -4,7 +4,7 @@
 prepend:
   No.:
     # increment column is aligned to the right.
-    value: increment
+    type: increment
     width: 5
 
 # Here is the column conditions, which are not in prepended or appended columns .

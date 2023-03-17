@@ -218,6 +218,7 @@ def build_excel(directory_path):
 
         for column_index, column in enumerate(column_config.prepend_columns.items()):
             columns.insert(column_index, column[0])
+
         for column in column_config.append_columns:
             columns.append(column)
 
@@ -252,11 +253,11 @@ def build_excel(directory_path):
                 cell = ws.cell(row=row_index, column=column_index + 1)
                 if column in step:
                     value = step[column]
-                    for k, v in variables:
-                      value = re.sub(r'{{\s*' + k + r'\s*}}', value)
+                    if isinstance(value, str):
+                        for k, v in variables.items():
+                            value = re.sub(r'{{\s*' + k + r'\s*}}', v, value)
                     cell.value = value
                 cell.border = THIN_BORDER
-                cell.alignment = Alignment.LEFT.excel_alignment()
 
             row_index += 1
 

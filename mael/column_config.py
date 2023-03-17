@@ -2,10 +2,12 @@ from enum import Enum
 import openpyxl
 import yaml
 
+
 class ValueType(Enum):
     INCREMENT = 1
     STRING = 2
     LIST = 3
+
 
 class Alignment(Enum):
     LEFT = 1
@@ -22,6 +24,7 @@ class Alignment(Enum):
         if self == Alignment.RIGHT:
             return openpyxl.styles.alignment.Alignment(
                 wrap_text=True, vertical='top', horizontal='right')
+
 
 class ColumnCondition:
     def __init__(
@@ -51,7 +54,9 @@ class ColumnConfig:
         return [k for k, v in self.conditions.items() if v.type == ValueType.LIST]
 
     def increment_columns(self):
-        return [k for k, v in self.conditions.items() if v.type == ValueType.INCREMENT]
+        return [
+            k for k, v in {**self.prepend_columns, **self.append_columns}.items() if v.type == ValueType.INCREMENT
+        ]
 
     def parse(self, path: str):
         with open(path, 'r') as f:
@@ -67,7 +72,7 @@ class ColumnConfig:
 
         if 'append' in config:
             for name, column in config['append'].items():
-                self.prepend_columns[name] = self.parse_condition(column)
+                self.append_columns[name] = self.parse_condition(column)
 
     @staticmethod
     def parse_condition(condition: dict):
@@ -101,7 +106,7 @@ class ColumnConfig:
         <Alignment.RIGHT: 3>
         """
         return ColumnCondition(
-            ValueType[condition['value_type'].upper()] if 'value_type' in condition else ValueType.STRING,
-            condition['width'] if 'width' in condition else None,
-            Alignment[condition['alignment'].upper()] if 'alignment' in condition else Alignment.LEFT
+            ValueType[condition['type'].upper()] if condition and 'type' in condition else ValueType.STRING,
+            condition['width'] if condition and 'width' in condition else None,
+            Alignment[condition['alignment'].upper()] if condition and 'alignment' in condition else Alignment.LEFT
         )
