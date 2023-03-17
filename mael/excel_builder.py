@@ -268,6 +268,10 @@ def build_excel(directory_path):
                             value = re.sub(r'{{\s*' + k + r'\s*}}', v, value)
                     cell.value = value
                 cell.border = THIN_BORDER
+                if column in all_conditions:
+                    cell.alignment = all_conditions[column].alignment.excel_alignment()
+                else:
+                    cell.alignment = Alignment.LEFT.excel_alignment()
 
             row_index += 1
 
