@@ -19,7 +19,16 @@ THIN_BORDER = px.styles.Border(left=px.styles.Side(border_style='thin'),
                                top=px.styles.Side(border_style='thin'),
                                bottom=px.styles.Side(border_style='thin'))
 
+
 def trim_blank_lines(lines: list[str]) -> list[str]:
+    """Remove blank lines from front and back of lines.
+
+    :param lines: list of lines
+    :return: list of lines
+
+    >>> trim_blank_lines([' ', '', 'a', '', 'b', 'c', '', ' ', ''])
+    ['a', '', 'b', 'c']
+    """
     # remove front blank lines
     blank_count = 0
     for i in range(len(lines)):
