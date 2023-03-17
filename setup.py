@@ -1,6 +1,6 @@
-from setuptools import setup, find_packages
-from codecs import open
 import os
+from codecs import open
+from setuptools import setup, find_packages
 
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
