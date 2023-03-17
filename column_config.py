@@ -2,43 +2,15 @@ import openpyxl
 import yaml
 from enum import Enum
 
-
 class ValueType(Enum):
     INCREMENT = 1
     STRING = 2
     LIST = 3
 
-    @staticmethod
-    def parse(value_type):
-        if value_type == ValueType:
-            return value_type
-        value_type = value_type.lower()
-        if value_type == 'increment':
-            return ValueType.INCREMENT
-        if value_type == 'string':
-            return ValueType.STRING
-        if value_type == 'list':
-            return ValueType.LIST
-        raise ValueError(f'Invalid value type: {value_type}')
-
-
 class Alignment(Enum):
     LEFT = 1
     CENTER = 2
     RIGHT = 3
-
-    @staticmethod
-    def parse(alignment):
-        if alignment == Alignment:
-            return alignment
-        alignment = alignment.lower()
-        if alignment == 'left':
-            return Alignment.LEFT
-        if alignment == 'center':
-            return Alignment.CENTER
-        if alignment == 'right':
-            return Alignment.RIGHT
-        raise ValueError(f'Invalid alignment: {alignment}')
 
     def excel_alignment(self):
         if self == Alignment.LEFT:
@@ -127,8 +99,6 @@ class ColumnConfig:
         ...     'alignment': 'right'
         ... }).alignment
         <Alignment.RIGHT: 3>
-
-
         """
         return ColumnCondition(
             ValueType[condition['value_type'].upper()] if 'value_type' in condition else ValueType.STRING,
