@@ -10,7 +10,7 @@ root_dir = os.path.abspath(os.path.dirname(__file__))
 #     install_requires = _requirements()
 
 # Get the long description from the README file
-readme_file_path = os.path.join(root_dir, 'README.md')
+readme_file_path = os.path.join(root_dir, 'README.rst')
 with open(readme_file_path, encoding='utf-8') as f:
     long_description = f.read()
 
