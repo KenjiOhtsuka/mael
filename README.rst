@@ -26,7 +26,7 @@ This tool is installed with pip:
 .. code-block:: bash
 
     $ pip install mael
-    
+
 *****
 Usage
 *****
@@ -36,49 +36,49 @@ Usage
    .. code-block:: bash
 
      $ mael init some_dir
-        
+
 #. Write your data in markdown. You can put multiple markdown files in the directory.
 
    .. code-block:: markdown
-   
+
      # List title
-        
+
      ## Summary
-        
+
      Please write summary of the table data.
-        
+
      ## List
-        
+
      ### Column 1
-        
+
      Value 1-1
-        
+
      ### Column 2
-        
+
      Value 1-2
-        
+
      ---
-        
+
      ### Column 1
-        
+
      Value 2-1
-        
+
      ---
-        
+
      ### Column 2
-        
+
      Value 3-2
-     
+
    Separate each item with :code:`---`.
-        
-3. Build Excel, then you can get an Excel file in the directory.::
+
+#. Build Excel, then you can get an Excel file in the directory.::
 
         $ mael build some_dir
-        
+
    There, the Excel file contains the sheet as:
 
      Summary
-    
+
      Please write summary of the table data.
 
      +-----------+-----------+-----------+
@@ -88,5 +88,5 @@ Usage
      +-----------+-----------+-----------+
      | Value 2-1 |           | Value 3-2 |
      +-----------+-----------+-----------+
-    
+
    If you put multiple markdown files, the Excel file contains multiple sheets.
