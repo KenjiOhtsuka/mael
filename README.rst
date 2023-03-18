@@ -92,6 +92,38 @@ Usage
    If you put multiple markdown files, the Excel file contains multiple sheets.
 
 ************
+Advanced use
+************
+
+You can use variables.
+Also, you can define environmental variables for each environment.
+
+#. Define variables in :code:`some_dir/config/variables.ini`:
+
+   .. code-block:: ini
+
+     VARIABLE_1=ABCDEFG
+     VARIABLE_2=HIJKLMN
+
+#. Use the variables in markdown files.
+   Surround the variable name with :code:`{{` and :code:`}}`:
+
+   .. code-block:: markdown
+
+     # List title
+
+     ## Summary
+
+     variable 1 is {{ VARIABLE_1 }}.
+     variable 2 is {{ VARIABLE_2 }}.
+
+     ......
+
+   Of course, you can use the variables not only in the summary but also in the list.
+
+To use environmental variables, define the variables in :code:`some_dir/config/variables.${env_name}.ini`, such as :code:`some_dir/config/variables.dev.ini`. Environmental variable file overwrite the varabiles defined in the normal variable file, :code:`variable.ini`. To build the environmental file, execute :code:`mael build some_dir -e dev`, and you will get the Excel file, :code:`some_dir_dev.xlsx`.
+
+************
 PyPI package
 ************
 

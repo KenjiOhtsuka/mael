@@ -15,7 +15,9 @@ This is a tool to convert markdown file to excel.
 
 # Initialize the directory
 % mael init .
+
 # Create some markdown files in the directory 
+
 # Build the Excel file
 % mael build .
 """
@@ -27,6 +29,7 @@ This is a tool to convert markdown file to excel.
     # parser for build command
     parser_build = subparsers.add_parser('build', help='Build Excel from markdown files')
     parser_build.add_argument('directory', default=os.getcwd(), help='Directory which holds markdown files.')
+    parser_build.add_argument('-e', '--environment', help='Environment signature such as "dev" or "prod"')
 
     args = parser.parse_args()
 
@@ -44,7 +47,7 @@ This is a tool to convert markdown file to excel.
         i.initialize()
     elif args.command == 'build':
         # read the directory
-        build_excel(target_dir)
+        build_excel(target_dir, args.environment)
 
 # TODO:
 #   * font configuration

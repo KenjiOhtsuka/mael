@@ -7,17 +7,78 @@ from openpyxl.utils.cell import get_column_letter
 from .column_config import ColumnConfig, ValueType, Alignment
 
 
-VARIABLE_CONFIG_PATH = 'variables.ini'
 COLUMN_CONFIG_PATHS = [
     'columns.yml',
     'columns.yaml',
 ]
+
 IGNORE_FILE_PATH = 'ignore.txt'
 
 THIN_BORDER = px.styles.Border(left=px.styles.Side(border_style='thin'),
                                right=px.styles.Side(border_style='thin'),
                                top=px.styles.Side(border_style='thin'),
                                bottom=px.styles.Side(border_style='thin'))
+
+
+def variable_config_names(environment: str = None) -> list[str]:
+    """Return a list of paths to variable config files.
+
+    :param environment: environment signature such as "dev" or "test"
+    :return: list of paths
+    """
+    if environment is None or environment == '':
+        return ['variables.ini']
+
+    return [
+        'variables.ini',
+        f'variables.{environment}.ini',
+    ]
+
+
+def read_variables(directory_path, environment: str = None) -> dict[str, str]:
+    """Read variables from config files.
+
+    :param directory_path: path to the directory which holds config files
+    :param environment: environment signature such as "dev" or "test"
+    :return: dictionary of variables
+    """
+    variables = {}
+    for file_name in variable_config_names(environment):
+        file_path = os.path.join(directory_path, 'config', file_name)
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as f:
+                result = re.findall(r'^(?P<key>[^#].*)=(?P<value>.*)', f.read(), flags=re.MULTILINE)
+                for key, value in result:
+                    variables[key.strip()] = value.strip()
+    return variables
+
+
+def read_column_config(directory_path) -> ColumnConfig:
+    """Read column config from config files.
+
+    :param directory_path: path to the directory which holds config files
+    :return: ColumnConfig object
+    """
+    column_config = ColumnConfig()
+    for path in COLUMN_CONFIG_PATHS:
+        file_path = os.path.join(directory_path, 'config', path)
+        if os.path.exists(file_path):
+            column_config.parse(file_path)
+            break
+    return column_config
+
+
+def read_ignore_file(directory_path) -> list[str]:
+    """Read ignore file.
+
+    :param directory_path: path to the directory which holds config files
+    :return: list of file names
+    """
+    ignore_file_path = os.path.join(directory_path, 'config', IGNORE_FILE_PATH)
+    if os.path.exists(ignore_file_path):
+        with open(ignore_file_path, 'r') as f:
+            return [line.strip() for line in f.readlines()]
+    return []
 
 
 def trim_blank_lines(lines: list[str]) -> list[str]:
@@ -76,24 +137,30 @@ class StepItem:
             return self.content_items
 
 
-def build_excel(directory_path):
+def apply_variables(value, variables: dict) -> str | None:
+    """Apply variables to value.
+
+    :param value: value to apply variables
+    :param variables: variables
+    :return: value with variables applied or None if value is not string
+
+    >>> apply_variables('a{{b}}c', {'b': 'B'})
+    'aBc'
+    """
+    if not isinstance(value, str):
+        return None
+    for k, v in variables.items():
+        value = re.sub(r'{{\s*' + k + r'\s*}}', v, value)
+    return value
+
+
+def build_excel(directory_path, environment: str = None):
     # load column config
-    column_config = ColumnConfig()
-    for path in COLUMN_CONFIG_PATHS:
-        file_path = os.path.join(directory_path, 'config', path)
-        if os.path.exists(file_path):
-            column_config.parse(file_path)
-            break
+    column_config = read_column_config(directory_path)
     list_columns = column_config.list_columns()
 
     # load variables from ini
-    variables = {}
-    file_path = os.path.join(directory_path, 'config', VARIABLE_CONFIG_PATH)
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as f:
-            result = re.findall(r'^(?P<key>[^#].*)=(?P<value>.*)', f.read(), flags=re.MULTILINE)
-            for key, value in result:
-                variables[key.strip()] = value.strip()
+    variables = read_variables(directory_path, environment)
 
     ignore_file_path = os.path.join(directory_path, 'config', IGNORE_FILE_PATH)
     ignore_file_names = []
@@ -165,7 +232,7 @@ def build_excel(directory_path):
 
             # write summary lines
             for summary_line in summary_lines:
-                ws.cell(row=row_index, column=1).value = summary_line
+                ws.cell(row=row_index, column=1).value = apply_variables(summary_line, variables)
                 row_index += 1
 
             row_index += 1
@@ -262,11 +329,7 @@ def build_excel(directory_path):
             for column_index, column in enumerate(columns):
                 cell = ws.cell(row=row_index, column=column_index + 1)
                 if column in step:
-                    value = step[column]
-                    if isinstance(value, str):
-                        for k, v in variables.items():
-                            value = re.sub(r'{{\s*' + k + r'\s*}}', v, value)
-                    cell.value = value
+                    cell.value = apply_variables(step[column], variables)
                 cell.border = THIN_BORDER
                 if column in all_conditions:
                     cell.alignment = all_conditions[column].alignment.excel_alignment()
@@ -279,7 +342,11 @@ def build_excel(directory_path):
 
     # save Excel file
     basename = os.path.basename(os.path.abspath(directory_path))
-    filename = f'{basename}.xlsx'
+    if environment is None or environment == '':
+        filename = basename + '.xlsx'
+    else:
+        filename = f'{basename}_{environment}.xlsx'
     wb.save(os.path.join(directory_path, filename))
+
     print('Saved', filename)
     return wb
