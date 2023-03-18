@@ -71,9 +71,11 @@ Usage
 
    Separate each item with :code:`---`.
 
-#. Build Excel, then you can get an Excel file in the directory.::
+#. Build Excel, then you can get an Excel file in the directory.
 
-        $ mael build some_dir
+   .. code-block:: bash
+
+     $ mael build some_dir
 
    There, the Excel file contains the sheet as:
 
@@ -120,6 +122,21 @@ Also, you can define environmental variables for each environment.
      ......
 
    Of course, you can use the variables not only in the summary but also in the list.
+
+#. Build Excel, then you can get an Excel file in the directory.
+
+   .. code-block:: bash
+
+     $ mael build some_dir
+
+   There, the Excel file contains the sheet as:
+
+     Summary
+
+     variable 1 is ABCDEFG.
+     variable 2 is HIJKLMN.
+
+     ......
 
 To use environmental variables, define the variables in :code:`some_dir/config/variables.${env_name}.ini`, such as :code:`some_dir/config/variables.dev.ini`. Environmental variable file overwrite the varabiles defined in the normal variable file, :code:`variable.ini`. To build the environmental file, execute :code:`mael build some_dir -e dev`, and you will get the Excel file, :code:`some_dir_dev.xlsx`.
 

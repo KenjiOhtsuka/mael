@@ -19,7 +19,7 @@ setup(
     packages=find_packages(),
     # package_dir={'': 'mael'},
     # packages=find_packages(where='mael'),
-    version='0.0.3.20',
+    version='0.0.3.21',
     py_modules=['mael', 'mael.main', 'mael.initializer', 'mael.excel_builder', 'mael.column_config'],
     install_requires=[
         'pyyaml',
