@@ -132,9 +132,10 @@ class StepItem:
         if self.type == ValueType.STRING:
             self.content_lines = trim_blank_lines(self.content_lines)
             return "\n".join(self.content_lines)
-        elif self.type == ValueType.LIST:
+        if self.type == ValueType.LIST:
             self.content_items = trim_blank_lines(self.content_items)
             return self.content_items
+        raise ValueError(f'Type {self.type} does not provide content.')
 
 
 def apply_variables(value, variables: dict) -> str | None:
