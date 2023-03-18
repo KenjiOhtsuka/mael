@@ -79,7 +79,7 @@ Usage
 
    There, the Excel file contains the sheet as:
 
-     Summary
+     **Summary**
 
      Please write summary of the table data.
 
@@ -116,8 +116,8 @@ Also, you can define environmental variables for each environment.
 
      ## Summary
 
-     variable 1 is {{ VARIABLE_1 }}.
-     variable 2 is {{ VARIABLE_2 }}.
+     Variable 1 is {{ VARIABLE_1 }}.
+     Variable 2 is {{ VARIABLE_2 }}.
 
      ......
 
@@ -131,12 +131,12 @@ Also, you can define environmental variables for each environment.
 
    There, the Excel file contains the sheet as:
 
-     Summary
+     **Summary**
 
-     variable 1 is ABCDEFG.
-     variable 2 is HIJKLMN.
+     | variable 1 is ABCDEFG.
+     | variable 2 is HIJKLMN.
 
-     ......
+     | \.\.\.\.\.\.
 
 To use environmental variables, define the variables in :code:`some_dir/config/variables.${env_name}.ini`, such as :code:`some_dir/config/variables.dev.ini`. Environmental variable file overwrite the varabiles defined in the normal variable file, :code:`variable.ini`. To build the environmental file, execute :code:`mael build some_dir -e dev`, and you will get the Excel file, :code:`some_dir_dev.xlsx`.
 
