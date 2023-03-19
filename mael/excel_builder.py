@@ -347,7 +347,9 @@ def build_excel(directory_path, environment: str = None):
         filename = basename + '.xlsx'
     else:
         filename = f'{basename}_{environment}.xlsx'
-    wb.save(os.path.join(directory_path, filename))
+    if not os.path.exists(os.path.join(directory_path, 'output')):
+        os.makedirs(os.path.join(directory_path, 'output'))
+    wb.save(os.path.join(directory_path, 'output', filename))
 
     print('Saved', filename)
     return wb
