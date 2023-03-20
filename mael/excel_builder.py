@@ -149,7 +149,7 @@ def apply_variables(value, variables: dict) -> str | None:
     'aBc'
     """
     if not isinstance(value, str):
-        return None
+        return value
     for k, v in variables.items():
         value = re.sub(r'{{\s*' + k + r'\s*}}', v, value)
     return value
