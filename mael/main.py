@@ -30,6 +30,10 @@ This is a tool to convert markdown file to excel.
     parser_build = subparsers.add_parser('build', help='Build Excel from markdown files')
     parser_build.add_argument('directory', default=os.getcwd(), help='Directory which holds markdown files.')
     parser_build.add_argument('-e', '--environment', help='Environment signature such as "dev" or "prod"')
+    # parser for inspect command
+    parser_build = subparsers.add_parser('inspect', help='Under development')
+    parser_build.add_argument('directory', default=os.getcwd(), help='Directory which holds markdown files.')
+    parser_build.add_argument('-e', '--environment', help='Environment signature such as "dev" or "prod"')
 
     args = parser.parse_args()
 
@@ -46,8 +50,16 @@ This is a tool to convert markdown file to excel.
         i = Initializer(target_dir)
         i.initialize()
     elif args.command == 'build':
-        # read the directory
+        # read the directory and save the Excel file
         build_excel(target_dir, args.environment)
+    elif args.command == 'inspect':
+        # read the directory and get into REPL
+        #d = load_data()
+        pass
+
+
+def repl(directory, env = None):
+    pass
 
 # TODO:
 #   * font configuration

@@ -1,5 +1,9 @@
 # This is a sample file for column conditions.
 
+# Here is global configuration for all columns
+global:
+  duplicate_previous_for_blank: true
+
 # These columns are prepended to the table.
 prepend:
   No.:

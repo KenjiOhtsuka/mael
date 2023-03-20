@@ -227,8 +227,7 @@ def build_excel(directory_path, environment: str = None):
                 line = f.readline()
                 if re.match(r'^##\s*(List|Steps|Rows)\s*$', line):
                     break
-                else:
-                    summary_lines.append(line.rstrip())
+                summary_lines.append(line.rstrip())
             summary_lines = trim_blank_lines(summary_lines)
 
             # write summary lines
@@ -261,7 +260,7 @@ def build_excel(directory_path, environment: str = None):
                         step_dict = {}
                     continue
 
-                result = re.match(r'^#{3,}\s*(.*)\s*$', line)
+                result = re.match(r'^#{3,}\s*(\S*)\s*$', line)
                 if result:
                     if item:
                         step_dict[item.title] = item.get_content()
@@ -275,8 +274,12 @@ def build_excel(directory_path, environment: str = None):
                 if item:
                     item.add_content_line(line.rstrip())
 
-        # write steps
+        # update steps
         columns = functools.reduce(lambda x, y: x + [z for z in y if z not in x], map(lambda x: x.keys(), steps), [])
+        # Copy the previous column value if the step doesn't have the column
+        if column_config.duplicate_previous_for_blank:
+            for index, step in enumerate(steps):
+                step.update({k: v for k, v in steps[index - 1].items() if k not in step})
         for column in list_columns:
             if column in columns:
                 index = columns.index(column)
@@ -284,8 +287,9 @@ def build_excel(directory_path, environment: str = None):
                 # add numbered column
                 for i in range(count - 1, -1, -1):
                     columns.insert(index + 1, f'{column} ({i + 1})')
+
                 # split list column
-                for step in steps:
+                for index, step in enumerate(steps):
                     if column in step:
                         for i in range(len(step[column])):
                             step[f'{column} ({i + 1})'] = step[column][i]
@@ -353,3 +357,7 @@ def build_excel(directory_path, environment: str = None):
 
     print('Saved', filename)
     return wb
+
+
+def is_none_or_blank_string(value):
+    return value is None or value.strip() == ''

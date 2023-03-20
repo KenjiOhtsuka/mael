@@ -15,15 +15,14 @@ class Alignment(Enum):
     RIGHT = 3
 
     def excel_alignment(self):
-        if self == Alignment.LEFT:
-            return openpyxl.styles.alignment.Alignment(
-                wrap_text=True, vertical='top', horizontal='left')
         if self == Alignment.CENTER:
             return openpyxl.styles.alignment.Alignment(
                 wrap_text=True, vertical='top', horizontal='center')
         if self == Alignment.RIGHT:
             return openpyxl.styles.alignment.Alignment(
                 wrap_text=True, vertical='top', horizontal='right')
+        return openpyxl.styles.alignment.Alignment(
+            wrap_text=True, vertical='top', horizontal='left')
 
 
 class ColumnCondition:
@@ -46,14 +45,15 @@ class ColumnConfig:
         self.prepend_columns = {}
         self.conditions = {}
         self.append_columns = {}
+        self.duplicate_previous_for_blank = True
 
-    def all_conditions(self):
+    def all_conditions(self) -> dict:
         return {**self.prepend_columns, **self.conditions, **self.append_columns}
 
-    def list_columns(self):
+    def list_columns(self) -> list[str]:
         return [k for k, v in self.conditions.items() if v.type == ValueType.LIST]
 
-    def increment_columns(self):
+    def increment_columns(self) -> list[str]:
         return [
             k for k, v in {**self.prepend_columns, **self.append_columns}.items() if v.type == ValueType.INCREMENT
         ]
@@ -65,17 +65,19 @@ class ColumnConfig:
         with open(path, 'r') as f:
             config = yaml.load(f, Loader=yaml.SafeLoader)
 
-        if 'prepend' in config:
-            for name, column in config['prepend'].items():
-                self.prepend_columns[name] = self.parse_condition(column)
+        # check dict value
+        # refactor
+        self.duplicate_previous_for_blank = \
+            True.__eq__(config.get('global', {}).get('duplicate_previous_for_blank', False))
 
-        if 'column_conditions' in config:
-            for name, column in config['column_conditions'].items():
-                self.conditions[name] = self.parse_condition(column)
+        for name, column in config.get('prepend', {}).items():
+            self.prepend_columns[name] = self.parse_condition(column)
 
-        if 'append' in config:
-            for name, column in config['append'].items():
-                self.append_columns[name] = self.parse_condition(column)
+        for name, column in config.get('column_conditions', {}).items():
+            self.conditions[name] = self.parse_condition(column)
+
+        for name, column in config.get('append', {}).items():
+            self.append_columns[name] = self.parse_condition(column)
 
     @staticmethod
     def parse_condition(condition: dict):
@@ -113,3 +115,9 @@ class ColumnConfig:
             condition['width'] if condition and 'width' in condition else None,
             Alignment[condition['alignment'].upper()] if condition and 'alignment' in condition else Alignment.LEFT
         )
+
+
+class Document:
+    def __init__(self):
+        self.title = None
+        self.list = []
