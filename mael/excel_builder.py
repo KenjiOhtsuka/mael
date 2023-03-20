@@ -132,9 +132,10 @@ class StepItem:
         if self.type == ValueType.STRING:
             self.content_lines = trim_blank_lines(self.content_lines)
             return "\n".join(self.content_lines)
-        elif self.type == ValueType.LIST:
+        if self.type == ValueType.LIST:
             self.content_items = trim_blank_lines(self.content_items)
             return self.content_items
+        raise ValueError(f'Type {self.type} does not provide content.')
 
 
 def apply_variables(value, variables: dict) -> str | None:
@@ -148,7 +149,7 @@ def apply_variables(value, variables: dict) -> str | None:
     'aBc'
     """
     if not isinstance(value, str):
-        return None
+        return value
     for k, v in variables.items():
         value = re.sub(r'{{\s*' + k + r'\s*}}', v, value)
     return value
@@ -260,15 +261,14 @@ def build_excel(directory_path, environment: str = None):
                         step_dict = {}
                     continue
 
-                result = re.match(r'^###\s*(.*)\s*$', line)
+                result = re.match(r'^#{3,}\s*(.*)\s*$', line)
                 if result:
                     if item:
                         step_dict[item.title] = item.get_content()
                     title = result.group(1)
                     item = StepItem(
                         title,
-                        column_config.conditions[
-                            title].type if title in column_config.conditions else ValueType.STRING
+                        column_config.type_of(title)
                     )
                     continue
 
@@ -321,6 +321,7 @@ def build_excel(directory_path, environment: str = None):
 
         # write steps
         increment_columns = column_config.increment_columns()
+
         for index, step in enumerate(steps):
             increment_value = index + 1
             for column in increment_columns:
@@ -346,7 +347,9 @@ def build_excel(directory_path, environment: str = None):
         filename = basename + '.xlsx'
     else:
         filename = f'{basename}_{environment}.xlsx'
-    wb.save(os.path.join(directory_path, filename))
+    if not os.path.exists(os.path.join(directory_path, 'output')):
+        os.makedirs(os.path.join(directory_path, 'output'))
+    wb.save(os.path.join(directory_path, 'output', filename))
 
     print('Saved', filename)
     return wb

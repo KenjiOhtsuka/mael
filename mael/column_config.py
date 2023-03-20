@@ -58,6 +58,9 @@ class ColumnConfig:
             k for k, v in {**self.prepend_columns, **self.append_columns}.items() if v.type == ValueType.INCREMENT
         ]
 
+    def type_of(self, column: str):
+        return self.conditions[column].type if column in self.conditions else ValueType.STRING
+
     def parse(self, path: str):
         with open(path, 'r') as f:
             config = yaml.load(f, Loader=yaml.SafeLoader)
