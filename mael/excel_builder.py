@@ -260,7 +260,7 @@ def build_excel(directory_path, environment: str = None):
                         step_dict = {}
                     continue
 
-                result = re.match(r'^#{3,}\s*(\S*)\s*$', line)
+                result = re.match(r'^#{3,}\s*(\S.*\S|\S)\s*$', line)
                 if result:
                     if item:
                         step_dict[item.title] = item.get_content()
