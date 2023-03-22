@@ -2,6 +2,7 @@ import argparse
 import os
 from .excel_builder import build_excel
 from .initializer import Initializer
+from .inspector import repl
 
 
 def main() -> None:
@@ -54,12 +55,8 @@ This is a tool to convert markdown file to excel.
         build_excel(target_dir, args.environment)
     elif args.command == 'inspect':
         # read the directory and get into REPL
-        #d = load_data()
-        pass
+        repl(target_dir, args.environment)
 
-
-def repl(directory, env = None):
-    pass
 
 # TODO:
 #   * font configuration

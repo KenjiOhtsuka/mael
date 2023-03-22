@@ -4,7 +4,7 @@ import os
 import re
 import openpyxl as px
 from openpyxl.utils.cell import get_column_letter
-from .column_config import ColumnConfig, ValueType, Alignment
+from .column_config import ColumnConfig, ValueType, Alignment, Document
 
 
 COLUMN_CONFIG_PATHS = [
@@ -156,6 +156,11 @@ def apply_variables(value, variables: dict) -> str | None:
 
 
 def build_excel(directory_path, environment: str = None):
+    target_files = sorted(glob.glob(os.path.join(directory_path, '*.md')))
+    if len(target_files) == 0:
+        print(f'No markdown files found in {directory_path}')
+        return
+
     # load column config
     column_config = read_column_config(directory_path)
     list_columns = column_config.list_columns()
@@ -172,16 +177,16 @@ def build_excel(directory_path, environment: str = None):
 
     # create new excel book
     wb = px.Workbook()
-
     # build Excel file
-    for scenario_file in glob.glob(directory_path + '/*.md'):
+    for scenario_file in target_files:
         if os.path.basename(scenario_file) in ignore_file_names:
             continue
 
+        document = Document(os.path.abspath(scenario_file), variables)
         # add Excel sheet
         with open(scenario_file) as f:
             # set name
-            name = None
+            document.title = os.path.basename(scenario_file)
             while True:
                 line = f.readline()
 
@@ -190,13 +195,10 @@ def build_excel(directory_path, environment: str = None):
 
                 result = re.match(r'^#[^#]\s*(\S.*)\s*$', line.rstrip())
                 if result:
-                    name = result.group(1)
+                    document.title = result.group(1)
                     break
 
-            if not name:
-                raise Exception('Title is not set, which must begin with "#" at the top of the file.')
-
-            ws = wb.create_sheet(name)
+            ws = wb.create_sheet(document.title)
 
             # set summary
             has_summary = False

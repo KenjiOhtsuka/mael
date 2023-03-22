@@ -118,6 +118,7 @@ class ColumnConfig:
 
 
 class Document:
-    def __init__(self):
+    def __init__(self, file_path: str, variables = {}):
         self.title = None
+        self.summary = None
         self.list = []
