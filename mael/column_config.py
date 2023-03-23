@@ -30,7 +30,8 @@ class ColumnCondition:
             self,
             value_type: ValueType | str = ValueType.STRING,
             width: int = None,
-            alignment: Alignment | str = Alignment.LEFT
+            alignment: Alignment | str = Alignment.LEFT,
+            duplicate_previous_for_blank: bool = None,
     ):
         self.type = value_type
         self.width = width
@@ -38,6 +39,7 @@ class ColumnCondition:
             self.alignment = Alignment.RIGHT
         else:
             self.alignment = alignment
+        self.duplicate_previous_for_blank = duplicate_previous_for_blank
 
 
 class ColumnConfig:
@@ -82,8 +84,7 @@ class ColumnConfig:
         for name, column in config.get('append', {}).items():
             self.append_columns[name] = self.parse_condition(column)
 
-    @staticmethod
-    def parse_condition(condition: dict):
+    def parse_condition(self, condition: dict):
         """
         Parse a column condition from a dict
 
@@ -116,7 +117,9 @@ class ColumnConfig:
         return ColumnCondition(
             ValueType[condition['type'].upper()] if condition and 'type' in condition else ValueType.STRING,
             condition['width'] if condition and 'width' in condition else None,
-            Alignment[condition['alignment'].upper()] if condition and 'alignment' in condition else Alignment.LEFT
+            Alignment[condition['alignment'].upper()] if condition and 'alignment' in condition else Alignment.LEFT,
+            condition.get('duplicate_previous_for_blank', self.duplicate_previous_for_blank) \
+                if condition else self.duplicate_previous_for_blank,
         )
 
 

@@ -280,12 +280,16 @@ def build_excel(directory_path, environment: str = None):
                 if item:
                     item.add_content_line(line.rstrip())
 
+        all_conditions = column_config.all_conditions()
+
         # update steps
         columns = functools.reduce(lambda x, y: x + [z for z in y if z not in x], map(lambda x: x.keys(), steps), [])
         # Copy the previous column value if the step doesn't have the column
-        if column_config.duplicate_previous_for_blank:
-            for index, step in enumerate(steps):
-                step.update({k: v for k, v in steps[index - 1].items() if k not in step})
+        for index, step in enumerate(steps):
+            step.update({
+                k: v for k, v in steps[index - 1].items() \
+                    if k not in step and (k not in all_conditions or all_conditions[k].duplicate_previous_for_blank)
+            })
         for column in list_columns:
             if column in columns:
                 index = columns.index(column)
@@ -319,7 +323,6 @@ def build_excel(directory_path, environment: str = None):
             letter = get_column_letter(column_index + 1)
 
             # arrange column width
-            all_conditions = column_config.all_conditions()
             if column in all_conditions:
                 condition = all_conditions[column]
                 if condition.width:
