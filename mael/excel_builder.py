@@ -267,6 +267,10 @@ def build_excel(directory_path, environment: str = None):
                     if item:
                         step_dict[item.title] = item.get_content()
                     title = result.group(1)
+                    if not column_config.overwrite_for_repeat:
+                        if title in step_dict:
+                            steps.append(step_dict)
+                            step_dict = {}
                     item = StepItem(
                         title,
                         column_config.type_of(title)

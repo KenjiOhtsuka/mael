@@ -45,7 +45,8 @@ class ColumnConfig:
         self.prepend_columns = {}
         self.conditions = {}
         self.append_columns = {}
-        self.duplicate_previous_for_blank = True
+        self.overwrite_for_repeat = False
+        self.duplicate_previous_for_blank = False
 
     def all_conditions(self) -> dict:
         return {**self.prepend_columns, **self.conditions, **self.append_columns}
@@ -58,18 +59,20 @@ class ColumnConfig:
             k for k, v in {**self.prepend_columns, **self.append_columns}.items() if v.type == ValueType.INCREMENT
         ]
 
-    def type_of(self, column: str):
+    def type_of(self, column: str) -> ValueType:
         return self.conditions[column].type if column in self.conditions else ValueType.STRING
 
-    def parse(self, path: str):
+    def parse(self, path: str) -> None:
         with open(path, 'r') as f:
             config = yaml.load(f, Loader=yaml.SafeLoader)
-
+        if config is None:
+            return
         # check dict value
         # refactor
         self.duplicate_previous_for_blank = \
-            True.__eq__(config.get('global', {}).get('duplicate_previous_for_blank', False))
-
+            True == (config.get('global', {}).get('duplicate_previous_for_blank', False))
+        self.overwrite_for_repeat = \
+            True == (config.get('global', {}).get('overwrite_for_repeat', False))
         for name, column in config.get('prepend', {}).items():
             self.prepend_columns[name] = self.parse_condition(column)
 
