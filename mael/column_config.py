@@ -127,4 +127,5 @@ class Document:
     def __init__(self, file_path: str, variables = {}):
         self.title = None
         self.summary = None
+        self.summary_lines = []
         self.list = []

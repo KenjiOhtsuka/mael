@@ -1,6 +1,8 @@
 import argparse
 import os
-from .excel_builder import build_excel
+
+from .composer import OutputFormat
+from .excel_builder import convert
 from .initializer import Initializer
 from .inspector import repl
 
@@ -26,15 +28,22 @@ This is a tool to convert markdown file to excel.
     subparsers = parser.add_subparsers(dest='command')
     # parser for init command
     parser_init = subparsers.add_parser('init', help='Generate config files')
-    parser_init.add_argument('directory', default=os.getcwd(), help='Directory to be initialized.')
+    parser_init.add_argument('directory', default=os.getcwd(),
+                             help='Directory to be initialized.')
     # parser for build command
     parser_build = subparsers.add_parser('build', help='Build Excel from markdown files')
-    parser_build.add_argument('directory', default=os.getcwd(), help='Directory which holds markdown files.')
-    parser_build.add_argument('-e', '--environment', help='Environment signature such as "dev" or "prod"')
+    parser_build.add_argument('directory', default=os.getcwd(),
+                              help='Directory which holds markdown files.')
+    parser_build.add_argument('-e', '--environment',
+                              help='Environment signature such as "dev" or "prod"')
+    parser_build.add_argument('-f', '--format', default=OutputFormat.EXCEL,
+                              help='Output format such as "excel" or "csv", "tsv"')
     # parser for inspect command
     parser_build = subparsers.add_parser('inspect', help='Under development')
-    parser_build.add_argument('directory', default=os.getcwd(), help='Directory which holds markdown files.')
-    parser_build.add_argument('-e', '--environment', help='Environment signature such as "dev" or "prod"')
+    parser_build.add_argument('directory', default=os.getcwd(),
+                              help='Directory which holds markdown files.')
+    parser_build.add_argument('-e', '--environment',
+                              help='Environment signature such as "dev" or "prod"')
 
     args = parser.parse_args()
 
@@ -52,7 +61,7 @@ This is a tool to convert markdown file to excel.
         i.initialize()
     elif args.command == 'build':
         # read the directory and save the Excel file
-        build_excel(target_dir, args.environment)
+        convert(target_dir, args.environment, args.format)
     elif args.command == 'inspect':
         # read the directory and get into REPL
         repl(target_dir, args.environment)
