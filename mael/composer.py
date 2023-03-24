@@ -139,6 +139,7 @@ class CsvComposer(Composer):
         super().__init__()
         self.documents = []
         self.delimiter = delimiter
+        self.extension = 'csv'
 
     def add_sheet(self, document, column_config, variables, all_conditions, columns, steps):
         doc = {
@@ -170,9 +171,9 @@ class CsvComposer(Composer):
 
     def compose(self, directory_path, environment, basename) -> None:
         if environment is None or environment == '':
-            dir_name = basename + '_csv'
+            dir_name = basename + '_' + self.extension
         else:
-            dir_name = f'{basename}_{environment}_csv'
+            dir_name = f'{basename}_{environment}_' + self.extension
 
         dir_path = os.path.join(directory_path, 'output', dir_name)
         if os.path.exists(dir_path) and os.path.isdir(dir_path):
@@ -180,10 +181,10 @@ class CsvComposer(Composer):
         os.makedirs(dir_path)
 
         for doc in self.documents:
-            file_name = doc['title'] + '.csv'
+            file_name = doc['title'] + '.' + self.extension
             file_path = os.path.join(directory_path, 'output', dir_name, file_name)
             with open(file_path, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile, delimiter=',')
+                writer = csv.writer(csvfile, delimiter=self.delimiter)
                 writer.writerows(doc['rows'])
                 print('Saved', file_name)
 
@@ -191,3 +192,4 @@ class CsvComposer(Composer):
 class TsvComposer(CsvComposer):
     def __init__(self):
         super().__init__('\t')
+        self.extension = 'tsv'
