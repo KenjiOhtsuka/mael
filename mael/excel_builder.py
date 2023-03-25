@@ -2,10 +2,9 @@ import functools
 import glob
 import os
 import re
-import openpyxl as px
-from openpyxl.utils.cell import get_column_letter
-from .column_config import ColumnConfig, ValueType, Alignment
 
+from .column_config import ColumnConfig, ValueType, Alignment, Document
+from .composer import OutputFormat
 
 COLUMN_CONFIG_PATHS = [
     'columns.yml',
@@ -13,11 +12,6 @@ COLUMN_CONFIG_PATHS = [
 ]
 
 IGNORE_FILE_PATH = 'ignore.txt'
-
-THIN_BORDER = px.styles.Border(left=px.styles.Side(border_style='thin'),
-                               right=px.styles.Side(border_style='thin'),
-                               top=px.styles.Side(border_style='thin'),
-                               bottom=px.styles.Side(border_style='thin'))
 
 
 def variable_config_names(environment: str = None) -> list[str]:
@@ -138,24 +132,12 @@ class StepItem:
         raise ValueError(f'Type {self.type} does not provide content.')
 
 
-def apply_variables(value, variables: dict) -> str | None:
-    """Apply variables to value.
+def convert(directory_path, environment: str = None, format: OutputFormat = OutputFormat.EXCEL):
+    target_files = sorted(glob.glob(os.path.join(directory_path, '*.md')))
+    if len(target_files) == 0:
+        print(f'No markdown files found in {directory_path}')
+        return
 
-    :param value: value to apply variables
-    :param variables: variables
-    :return: value with variables applied or None if value is not string
-
-    >>> apply_variables('a{{b}}c', {'b': 'B'})
-    'aBc'
-    """
-    if not isinstance(value, str):
-        return value
-    for k, v in variables.items():
-        value = re.sub(r'{{\s*' + k + r'\s*}}', v, value)
-    return value
-
-
-def build_excel(directory_path, environment: str = None):
     # load column config
     column_config = read_column_config(directory_path)
     list_columns = column_config.list_columns()
@@ -170,18 +152,18 @@ def build_excel(directory_path, environment: str = None):
             ignore_file_names =\
                 list(filter(lambda x: x != '', map(lambda x: x.strip(), f.readlines())))
 
-    # create new excel book
-    wb = px.Workbook()
+    composer = OutputFormat.build_composer(format)
 
-    # build Excel file
-    for scenario_file in glob.glob(directory_path + '/*.md'):
+    # compose output
+    for scenario_file in target_files:
         if os.path.basename(scenario_file) in ignore_file_names:
             continue
 
+        document = Document(os.path.abspath(scenario_file), variables)
         # add Excel sheet
         with open(scenario_file) as f:
             # set name
-            name = None
+            document.title = os.path.basename(scenario_file)
             while True:
                 line = f.readline()
 
@@ -190,13 +172,8 @@ def build_excel(directory_path, environment: str = None):
 
                 result = re.match(r'^#[^#]\s*(\S.*)\s*$', line.rstrip())
                 if result:
-                    name = result.group(1)
+                    document.title = result.group(1)
                     break
-
-            if not name:
-                raise Exception('Title is not set, which must begin with "#" at the top of the file.')
-
-            ws = wb.create_sheet(name)
 
             # set summary
             has_summary = False
@@ -215,28 +192,14 @@ def build_excel(directory_path, environment: str = None):
             if not has_summary:
                 break
 
-            row_index = 1
-            cell = ws.cell(row=row_index, column=1)
-            cell.value = 'Summary'
-            cell.font = px.styles.Font(bold=True)
-            row_index += 2
-
             # read summary lines
             summary_lines = []
             while True:
                 line = f.readline()
                 if re.match(r'^##\s*(List|Steps|Rows)\s*$', line):
                     break
-                else:
-                    summary_lines.append(line.rstrip())
-            summary_lines = trim_blank_lines(summary_lines)
-
-            # write summary lines
-            for summary_line in summary_lines:
-                ws.cell(row=row_index, column=1).value = apply_variables(summary_line, variables)
-                row_index += 1
-
-            row_index += 1
+                summary_lines.append(line.rstrip())
+            document.summary_lines = trim_blank_lines(summary_lines)
 
             # read steps
             steps = []
@@ -261,11 +224,15 @@ def build_excel(directory_path, environment: str = None):
                         step_dict = {}
                     continue
 
-                result = re.match(r'^#{3,}\s*(.*)\s*$', line)
+                result = re.match(r'^#{3,}\s*(\S.*\S|\S)\s*$', line)
                 if result:
                     if item:
                         step_dict[item.title] = item.get_content()
                     title = result.group(1)
+                    if not column_config.overwrite_for_repeat:
+                        if title in step_dict:
+                            steps.append(step_dict)
+                            step_dict = {}
                     item = StepItem(
                         title,
                         column_config.type_of(title)
@@ -275,8 +242,16 @@ def build_excel(directory_path, environment: str = None):
                 if item:
                     item.add_content_line(line.rstrip())
 
-        # write steps
+        all_conditions = column_config.all_conditions()
+
+        # update steps
         columns = functools.reduce(lambda x, y: x + [z for z in y if z not in x], map(lambda x: x.keys(), steps), [])
+        # Copy the previous column value if the step doesn't have the column
+        for index, step in enumerate(steps):
+            step.update({
+                k: v for k, v in steps[index - 1].items() \
+                    if k not in step and (k not in all_conditions or all_conditions[k].duplicate_previous_for_blank)
+            })
         for column in list_columns:
             if column in columns:
                 index = columns.index(column)
@@ -284,8 +259,9 @@ def build_excel(directory_path, environment: str = None):
                 # add numbered column
                 for i in range(count - 1, -1, -1):
                     columns.insert(index + 1, f'{column} ({i + 1})')
+
                 # split list column
-                for step in steps:
+                for index, step in enumerate(steps):
                     if column in step:
                         for i in range(len(step[column])):
                             step[f'{column} ({i + 1})'] = step[column][i]
@@ -299,57 +275,13 @@ def build_excel(directory_path, environment: str = None):
         for column in column_config.append_columns:
             columns.append(column)
 
-        # write header
-        for column_index, column in enumerate(columns):
-            cell = ws.cell(row=row_index, column=column_index + 1)
-            cell.value = column
-            cell.font = px.styles.Font(bold=True)
-            cell.border = THIN_BORDER
+        # add sheet
+        composer.add_sheet(document, column_config, variables, all_conditions, columns, steps)
 
-            letter = get_column_letter(column_index + 1)
-
-            # arrange column width
-            all_conditions = column_config.all_conditions()
-            if column in all_conditions:
-                condition = all_conditions[column]
-                if condition.width:
-                    ws.column_dimensions[letter].width = condition.width
-                cell.alignment = condition.alignment.excel_alignment()
-            else:
-                cell.alignment = Alignment.LEFT.excel_alignment()
-        row_index += 1
-
-        # write steps
-        increment_columns = column_config.increment_columns()
-
-        for index, step in enumerate(steps):
-            increment_value = index + 1
-            for column in increment_columns:
-                step[column] = increment_value
-
-            for column_index, column in enumerate(columns):
-                cell = ws.cell(row=row_index, column=column_index + 1)
-                if column in step:
-                    cell.value = apply_variables(step[column], variables)
-                cell.border = THIN_BORDER
-                if column in all_conditions:
-                    cell.alignment = all_conditions[column].alignment.excel_alignment()
-                else:
-                    cell.alignment = Alignment.LEFT.excel_alignment()
-
-            row_index += 1
-
-    wb.remove(wb.worksheets[0])
-
-    # save Excel file
     basename = os.path.basename(os.path.abspath(directory_path))
-    if environment is None or environment == '':
-        filename = basename + '.xlsx'
-    else:
-        filename = f'{basename}_{environment}.xlsx'
-    if not os.path.exists(os.path.join(directory_path, 'output')):
-        os.makedirs(os.path.join(directory_path, 'output'))
-    wb.save(os.path.join(directory_path, 'output', filename))
 
-    print('Saved', filename)
-    return wb
+    return composer.compose(directory_path, environment, basename)
+
+
+def is_none_or_blank_string(value):
+    return value is None or value.strip() == ''
