@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 from abc import ABC, abstractmethod
@@ -140,11 +141,12 @@ class CsvComposer(Composer):
         self.documents = []
         self.delimiter = delimiter
         self.extension = 'csv'
+        self.variables = {}
 
     def add_sheet(self, document, column_config, variables, all_conditions, columns, steps):
         doc = {
             'title': document.title,
-            'summary_lines': document.summary_lines,
+            'summary_lines': apply_variables("\n".join(document.summary_lines), variables),
             'columns': columns,
             'rows': []
         }
@@ -180,13 +182,32 @@ class CsvComposer(Composer):
             shutil.rmtree(dir_path)
         os.makedirs(dir_path)
 
+        values = [['title', 'description']]
         for doc in self.documents:
             file_name = doc['title'] + '.' + self.extension
-            file_path = os.path.join(directory_path, 'output', dir_name, file_name)
+            file_path = os.path.join(dir_path, file_name)
             with open(file_path, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile, delimiter=self.delimiter)
                 writer.writerows(doc['rows'])
                 print('Saved', file_name)
+            values.append([doc['title'], doc['summary_lines']])
+
+        # write summary file
+        if len(values) > 1:
+            prefix = ''
+            while True:
+                file_name = prefix + 'summary.' + self.extension
+                summary_file_path = os.path.join(dir_path, file_name)
+                if os.path.exists(summary_file_path):
+                    prefix += '_'
+                    if len(prefix) > 10:
+                        logging.warning('Too many summary files. Can\'t write the summary')
+                break
+
+            with open(os.path.join(dir_path, 'summary.' + self.extension), 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile, delimiter=self.delimiter)
+                writer.writerows(values)
+                print('Saved', 'summary.' + self.extension)
 
 
 class TsvComposer(CsvComposer):
