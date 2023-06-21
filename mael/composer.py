@@ -11,6 +11,7 @@ from .column_config import ColumnConfig, ValueType, Alignment, Document
 import csv
 import shutil
 
+
 def apply_variables(value, variables: dict) -> str | None:
     """Apply variables to value.
 
@@ -128,8 +129,7 @@ class ExcelComposer(Composer):
             filename = basename + '.xlsx'
         else:
             filename = f'{basename}_{environment}.xlsx'
-        if not os.path.exists(os.path.join(directory_path, 'output')):
-            os.makedirs(os.path.join(directory_path, 'output'))
+        os.makedirs(os.path.join(directory_path, 'output'), exist_ok=True)
         self.workbook.save(os.path.join(directory_path, 'output', filename))
         print('Saved', filename)
         return self.workbook
@@ -180,7 +180,7 @@ class CsvComposer(Composer):
         dir_path = os.path.join(directory_path, 'output', dir_name)
         if os.path.exists(dir_path) and os.path.isdir(dir_path):
             shutil.rmtree(dir_path)
-        os.makedirs(dir_path)
+        os.makedirs(dir_path, exist_ok=True)
 
         values = [['title', 'description']]
         for doc in self.documents:

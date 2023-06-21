@@ -3,7 +3,7 @@ import glob
 import os
 import re
 
-from .column_config import ColumnConfig, ValueType, Alignment, Document
+from .column_config import ColumnConfig, ValueType, Document
 from .composer import OutputFormat
 
 COLUMN_CONFIG_PATHS = [
