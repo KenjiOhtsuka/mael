@@ -65,7 +65,7 @@ class ColumnConfig:
         return self.conditions[column].type if column in self.conditions else ValueType.STRING
 
     def parse(self, path: str) -> None:
-        with open(path, 'r') as f:
+        with open(path, 'r', encoding='utf8') as f:
             config = yaml.load(f, Loader=yaml.SafeLoader)
         if config is None:
             return
