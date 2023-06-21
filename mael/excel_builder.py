@@ -40,7 +40,7 @@ def read_variables(directory_path, environment: str = None) -> dict[str, str]:
     for file_name in variable_config_names(environment):
         file_path = os.path.join(directory_path, 'config', file_name)
         if os.path.exists(file_path):
-            with open(file_path, 'r') as f:
+            with open(file_path, 'r', encoding="utf-8") as f:
                 result = re.findall(r'^(?P<key>[^#].*)=(?P<value>.*)', f.read(), flags=re.MULTILINE)
                 for key, value in result:
                     variables[key.strip()] = value.strip()
@@ -70,7 +70,7 @@ def read_ignore_file(directory_path) -> list[str]:
     """
     ignore_file_path = os.path.join(directory_path, 'config', IGNORE_FILE_PATH)
     if os.path.exists(ignore_file_path):
-        with open(ignore_file_path, 'r') as f:
+        with open(ignore_file_path, 'r', encoding="utf-8") as f:
             return [line.strip() for line in f.readlines()]
     return []
 
@@ -161,7 +161,7 @@ def convert(directory_path, environment: str = None, format: OutputFormat = Outp
 
         document = Document(os.path.abspath(scenario_file), variables)
         # add Excel sheet
-        with open(scenario_file) as f:
+        with open(scenario_file, encoding="utf-8") as f:
             # set name
             document.title = os.path.basename(scenario_file)
             while True:
