@@ -93,6 +93,12 @@ Usage
 
    If you put multiple markdown files, the Excel file contains multiple sheets.
 
+*********
+Attention
+*********
+
+Please write all the files in UTF-8 encoding.
+
 ************
 Advanced use
 ************
