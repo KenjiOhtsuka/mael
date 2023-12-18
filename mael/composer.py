@@ -130,6 +130,10 @@ class ExcelComposer(Composer):
         else:
             filename = f'{basename}_{environment}.xlsx'
         os.makedirs(os.path.join(directory_path, 'output'), exist_ok=True)
+
+        if len(self.workbook.worksheets) == 0:
+            raise ValueError('There is no valid markdown file.')
+
         self.workbook.save(os.path.join(directory_path, 'output', filename))
         print('Saved', filename)
         return self.workbook

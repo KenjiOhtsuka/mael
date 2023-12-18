@@ -190,7 +190,7 @@ def convert(directory_path, environment: str = None, format: OutputFormat = Outp
                 break
 
             if not has_summary:
-                break
+                continue
 
             # read summary lines
             summary_lines = []
