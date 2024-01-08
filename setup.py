@@ -40,3 +40,9 @@ setup(
     #     myproject=myproject:cli
     # ''',
 )
+
+"""
+python setup.py sdist bdist_wheel
+twine upload -r testpypi dist/mael-{version}.tar.gz
+twine upload -r pypi dist/mael-{version}.tar.gz
+"""
