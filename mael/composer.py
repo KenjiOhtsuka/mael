@@ -6,6 +6,7 @@ from enum import Enum
 
 import openpyxl as px
 from openpyxl.utils.cell import get_column_letter
+import xlsxwriter
 from .column_config import ColumnConfig, ValueType, Alignment, Document
 
 import csv
@@ -31,11 +32,37 @@ def apply_variables(value, variables: dict) -> str | None:
 
 class Composer(ABC):
     def __init__(self):
-        pass
+        self.documents = []
 
-    @abstractmethod
-    def add_sheet(self, document, column_config, variables, all_conditions, columns, steps):
-        pass
+    def add_sheet(self, document: Document, column_config, variables, all_conditions, columns, steps):
+        doc = {
+            'title': document.title,
+            'summary_lines': apply_variables("\n".join(document.summary_lines), variables),
+            'columns': columns,
+            'rows': [],
+            'column_config': column_config,
+            'all_conditions': all_conditions
+        }
+
+        # write header
+        values = [columns]
+
+        # write steps
+        increment_columns = column_config.increment_columns()
+
+        for index, step in enumerate(steps):
+            increment_value = index + 1
+            for column in increment_columns:
+                step[column] = increment_value
+            values.append(
+                [
+                    apply_variables(step[column], variables) if column in step else None
+                    for column in columns
+                ]
+            )
+
+        doc['rows'] = values
+        self.documents.append(doc)
 
     @abstractmethod
     def compose(self, directory_path, environment, basename):
@@ -69,7 +96,11 @@ class ExcelComposer(Composer):
         super().__init__()
         self.workbook = px.Workbook()
 
-    def add_sheet(self, document, column_config, variables, all_conditions, columns, steps):
+    def add_sheet(
+            self, document: Document, column_config, variables, all_conditions, columns, steps):
+        super().add_sheet(document, column_config, variables, all_conditions, columns, steps)
+
+        return
         ws = self.workbook.create_sheet(document.title)
         row_index = 1
         cell = ws.cell(row=row_index, column=1)
@@ -121,7 +152,69 @@ class ExcelComposer(Composer):
 
             row_index += 1
 
+    def _build_header_format(self, workbook, option: dict = {}):
+        header_format = workbook.add_format(dict({'bold': True}, **option))
+        header_format.set_border(1)
+        return header_format
+    #
+    def _build_cell_format(self, workbook, option: dict = {}):
+        if 'text_wrap' not in option:
+            option['text_wrap'] = True
+        option['valign'] = 'top'
+        cell_format = workbook.add_format(option)
+        cell_format.set_border(1)
+        return cell_format
+
     def compose(self, directory_path, environment, basename):
+        if len(self.documents) == 0:
+            raise ValueError('There is no valid markdown file.')
+
+        if environment is None or environment == '':
+            filename = basename + '.xlsx'
+        else:
+            filename = f'{basename}_{environment}.xlsx'
+        os.makedirs(os.path.join(directory_path, 'output'), exist_ok=True)
+        workbook = xlsxwriter.Workbook(os.path.join(directory_path, 'output', filename))
+
+        bold_format = workbook.add_format({'bold': True})
+
+        for document in self.documents:
+            # print(document)
+            ws = workbook.add_worksheet(document['title'])
+            row_index = 0
+            ws.write_string(row_index, 0, 'Summary', bold_format)
+            row_index += 2
+            print(document['summary_lines'])
+            # write summary lines
+            for summary_line in document['summary_lines'].splitlines():
+                ws.write_string(row_index, 0, summary_line)
+                row_index += 1
+            row_index += 1
+
+            all_conditions = document['all_conditions']
+
+            # write steps
+            column_config = document['column_config']
+            steps = document['rows']
+            columns = document['columns']
+
+            for index, step in enumerate(steps):
+                for column_index, column in enumerate(columns):
+                    format = self._build_cell_format(workbook) if index > 0 else self._build_header_format(workbook)
+                    if column in all_conditions:
+                        format.set_align(all_conditions[column].alignment.xlsx_alignment())
+
+                    text = step[column_index]
+                    if text is None:
+                        text = ''
+                    elif type(text) != str:
+                        text = str(text)
+                    ws.write_string(row_index, column_index, text, format)
+
+                row_index += 1
+
+        workbook.close()
+        return workbook
         self.workbook.remove(self.workbook.worksheets[0])
 
         # save Excel file
@@ -142,38 +235,9 @@ class ExcelComposer(Composer):
 class CsvComposer(Composer):
     def __init__(self, delimiter: str = ','):
         super().__init__()
-        self.documents = []
         self.delimiter = delimiter
         self.extension = 'csv'
         self.variables = {}
-
-    def add_sheet(self, document, column_config, variables, all_conditions, columns, steps):
-        doc = {
-            'title': document.title,
-            'summary_lines': apply_variables("\n".join(document.summary_lines), variables),
-            'columns': columns,
-            'rows': []
-        }
-
-        # write header
-        values = [columns]
-
-        # write steps
-        increment_columns = column_config.increment_columns()
-
-        for index, step in enumerate(steps):
-            increment_value = index + 1
-            for column in increment_columns:
-                step[column] = increment_value
-            values.append(
-                [
-                    apply_variables(step[column], variables) if column in step else None
-                    for column in columns
-                ]
-            )
-
-        doc['rows'] = values
-        self.documents.append(doc)
 
     def compose(self, directory_path, environment, basename) -> None:
         if environment is None or environment == '':

@@ -1,2 +1,3 @@
 openpyxl
+xlsxwriter
 PyYAML

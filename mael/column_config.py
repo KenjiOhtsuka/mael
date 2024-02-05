@@ -24,6 +24,13 @@ class Alignment(Enum):
         return openpyxl.styles.alignment.Alignment(
             wrap_text=True, vertical='top', horizontal='left')
 
+    def xlsx_alignment(self):
+        if self == Alignment.CENTER:
+            return 'center'
+        if self == Alignment.RIGHT:
+            return 'right'
+        return 'left'
+
 
 class ColumnCondition:
     def __init__(
@@ -124,7 +131,7 @@ class ColumnConfig:
 
 
 class Document:
-    def __init__(self, file_path: str, variables = {}):
+    def __init__(self, file_path: str, variables={}):
         self.title = None
         self.summary = None
         self.summary_lines = []
